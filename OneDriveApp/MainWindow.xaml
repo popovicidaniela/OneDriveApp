@@ -9,10 +9,10 @@
         Title="OneDriveApp" Height="350" Width="525">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition></RowDefinition>
             <RowDefinition Height="30"></RowDefinition>
+            <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
-        <ListView Grid.Row="0" x:Name="lvUsers" IsManipulationEnabled="True" SelectionMode="Single" SelectionChanged="Download">
+        <ListView Grid.Row="1" x:Name="lvUsers" IsManipulationEnabled="True" SelectionMode="Single" SelectionChanged="Download">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Name" Width="375" DisplayMemberBinding="{Binding Name}" />
@@ -20,6 +20,14 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Button x:Name="Upload" Grid.Row="1" Click="Upload_Click">Upload</Button>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Label x:Name="Upload" HorizontalAlignment="Right" Grid.Column="1" MouseLeftButtonDown="Upload_Click">Upload</Label>
+            <Label x:Name="Back" Grid.Column="0" MouseLeftButtonDown="Back_Click">Back</Label>
+        </Grid>
+        
     </Grid>
 </Window>

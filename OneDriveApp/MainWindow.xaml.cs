@@ -87,10 +87,12 @@ namespace OneDriveApp
                 if (path == null)
                 {
                     folder = await graphClient.Drive.Root.Request().Expand(expandValue).GetAsync();
+                    Back.IsEnabled = false;
                 }
                 else
                 {
                     folder = await graphClient.Drive.Root.ItemWithPath("/" + path).Request().Expand(expandValue).GetAsync();
+                    Back.IsEnabled = true;
                 }
                 ProcessFolder(folder);
             }
@@ -122,21 +124,29 @@ namespace OneDriveApp
         private async void Download(object sender, RoutedEventArgs e)
         {
             var m = lvUsers.SelectedIndex;
-            var listOfDriveItems = (List<DriveItem>)(lvUsers.ItemsSource);
-            var driveItem = listOfDriveItems[m];
-            LoadProperties(driveItem);
-            if (driveItem != null)
+            var listOfDriveItems = (IList<DriveItem>)(lvUsers.ItemsSource);
+            if (m != -1)
             {
-                var dialog = new SaveFileDialog();
-                dialog.FileName = driveItem.Name;
-                dialog.Filter = "All Files (*.*)|*.*";
-                var result = dialog.ShowDialog();
-                if (result.HasValue && result.Value != true)
-                    return;
-                using (var stream = await graphClient.Drive.Items[driveItem.Id].Content.Request().GetAsync())
-                using (var outputStream = new System.IO.FileStream(dialog.FileName, System.IO.FileMode.Create))
+                var driveItem = listOfDriveItems[m];
+                LoadProperties(driveItem);
+                if (driveItem != null && driveItem.Folder == null)
                 {
-                    await stream.CopyToAsync(outputStream);
+                    var dialog = new SaveFileDialog();
+                    dialog.FileName = driveItem.Name;
+                    dialog.Filter = "All Files (*.*)|*.*";
+                    var result = dialog.ShowDialog();
+                    if (result.HasValue && result.Value != true)
+                        return;
+                    using (var stream = await graphClient.Drive.Items[driveItem.Id].Content.Request().GetAsync())
+                    using (var outputStream = new System.IO.FileStream(dialog.FileName, System.IO.FileMode.Create))
+                    {
+                        await stream.CopyToAsync(outputStream);
+                    }
+                }
+                if (driveItem.Folder != null)
+                {
+                    var path = (driveItem.ParentReference.Path + "/" + driveItem.Name).Remove(0, 12);
+                    await LoadFolderFromPath(path);
                 }
             }
         }
@@ -192,6 +202,18 @@ namespace OneDriveApp
                         PresentServiceException(exception);
                     }
                 }
+            }
+        }
+        private async void Back_Click(object sender, RoutedEventArgs e)
+        {
+            if (CurrentFolder.ParentReference.Path == "/drive/root:")
+            {
+                await LoadFolderFromPath();
+            }
+            else
+            {
+                var path = (CurrentFolder.ParentReference.Path).Remove(0, 13);
+                await LoadFolderFromPath(path);
             }
         }
     }

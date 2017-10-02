@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:OneDriveApp"
         WindowStartupLocation="CenterScreen"
         mc:Ignorable="d"
-        Title="OneDriveApp" Height="350" Width="525">
+        Title="OneDrive App" Height="350" Width="525"
+        Icon="fix-OneDrive-icon-overlay-missing-in-Windows-10_-_.ico">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="30"></RowDefinition>

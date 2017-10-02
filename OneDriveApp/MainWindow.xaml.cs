@@ -3,15 +3,8 @@ using System;
 using System.Windows;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Microsoft.Win32;
+using System.Windows.Controls;
 
 namespace OneDriveApp
 {
@@ -20,8 +13,6 @@ namespace OneDriveApp
     /// </summary>
     public partial class MainWindow : Window
     {
-        public const string MsaClientId = "c1dff020-76af-4d00-b23a-dd30f761a164";
-        public const string MsaReturnUrl = "urn:ietf:wg:oauth:2.0:oob";
         private enum ClientType
         {
             Consumer,
@@ -30,13 +21,14 @@ namespace OneDriveApp
         private GraphServiceClient graphClient { get; set; }
         private ClientType clientType { get; set; }
         private DriveItem CurrentFolder { get; set; }
-        private DriveItem SelectedItem { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
             Loaded += Window_Loaded;
             Upload.IsEnabled = false;
+            Back.IsEnabled = false;
+            Back.Visibility = Visibility.Hidden;
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -74,7 +66,7 @@ namespace OneDriveApp
                 message = string.Format("{0}{1}", Environment.NewLine, oneDriveException.ToString());
             }
 
-            MessageBox.Show(string.Format("OneDrive reported the following error: {0}", message));
+            MessageBox.Show(string.Format("OneDrive reported the following error: {0}", message), "Message");
         }
         private async Task LoadFolderFromPath(string path = null)
         {
@@ -88,11 +80,13 @@ namespace OneDriveApp
                 {
                     folder = await graphClient.Drive.Root.Request().Expand(expandValue).GetAsync();
                     Back.IsEnabled = false;
+                    Back.Visibility = Visibility.Hidden;
                 }
                 else
                 {
                     folder = await graphClient.Drive.Root.ItemWithPath("/" + path).Request().Expand(expandValue).GetAsync();
                     Back.IsEnabled = true;
+                    Back.Visibility = Visibility.Visible;
                 }
                 ProcessFolder(folder);
             }
@@ -110,16 +104,11 @@ namespace OneDriveApp
             if (folder != null)
             {
                 CurrentFolder = folder;
-                LoadProperties(folder);
                 if (folder.Folder != null && folder.Children != null && folder.Children.CurrentPage != null)
                 {
                     LoadChildren(folder.Children.CurrentPage);
                 }
             }
-        }
-        private void LoadProperties(DriveItem item)
-        {
-            SelectedItem = item;
         }
         private async void Download(object sender, RoutedEventArgs e)
         {
@@ -128,7 +117,6 @@ namespace OneDriveApp
             if (m != -1)
             {
                 var driveItem = listOfDriveItems[m];
-                LoadProperties(driveItem);
                 if (driveItem != null && driveItem.Folder == null)
                 {
                     var dialog = new SaveFileDialog();
@@ -141,6 +129,7 @@ namespace OneDriveApp
                     using (var outputStream = new System.IO.FileStream(dialog.FileName, System.IO.FileMode.Create))
                     {
                         await stream.CopyToAsync(outputStream);
+                        MessageBox.Show(driveItem.Name + " was saved.", "Message");
                     }
                 }
                 if (driveItem.Folder != null)
@@ -169,7 +158,7 @@ namespace OneDriveApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error uploading file: " + ex.Message);
+                MessageBox.Show("Error uploading file: " + ex.Message, "Message");
                 originalFilename = null;
                 return null;
             }
@@ -191,7 +180,7 @@ namespace OneDriveApp
                         var uploadedItem =
                             await
                                 this.graphClient.Drive.Root.ItemWithPath(uploadPath).Content.Request().PutAsync<DriveItem>(stream);
-                        MessageBox.Show("Uploaded with ID: " + uploadedItem.Id);
+                        MessageBox.Show(filename + " was uploaded", "Message");
                         var listOfDriveItems = (List<DriveItem>)(lvUsers.ItemsSource);
                         lvUsers.ItemsSource = null;
                         listOfDriveItems.Add(uploadedItem);

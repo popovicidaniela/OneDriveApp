@@ -9,21 +9,19 @@ namespace OneDriveApp
 {
     public class AuthenticationHelper
     {
-        // The Client ID is used by the application to uniquely identify itself to the v2.0 authentication endpoint.
-        static string clientId = MainWindow.MsaClientId;
+        static string clientId = "c1dff020-76af-4d00-b23a-dd30f761a164";
         public static string[] Scopes = { "Files.ReadWrite.All" };
         public static PublicClientApplication IdentityClientApp = new PublicClientApplication(clientId);
         public static string TokenForUser = null;
         public static IUser AuthedIUser = null;
         public static DateTimeOffset Expiration;
         private static GraphServiceClient graphClient = null;
-        // Get an access token for the given context and resourceId. An attempt is first made to 
-        // acquire the token silently. If that fails, then we try to acquire the token by prompting the user.
+
         public static GraphServiceClient GetAuthenticatedClient()
         {
             if (graphClient == null)
             {
-                // Create Microsoft Graph client.
+
                 try
                 {
                     graphClient = new GraphServiceClient(
@@ -33,8 +31,6 @@ namespace OneDriveApp
                             {
                                 var token = await GetTokenForUserAsync();
                                 requestMessage.Headers.Authorization = new AuthenticationHeaderValue("bearer", token);
-                                // This header has been added to identify our sample in the Microsoft Graph service.  If extracting this code for your project please remove.
-                                requestMessage.Headers.Add("SampleID", "uwp-csharp-apibrowser-sample");
                             }));
                     return graphClient;
                 }

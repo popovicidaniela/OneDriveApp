@@ -9,7 +9,7 @@ namespace OneDriveApp
 {
     public class AuthenticationHelper
     {
-        static string clientId = "c1dff020-76af-4d00-b23a-dd30f761a164";
+        static string clientId = "?";//yse your own clientId
         public static string[] Scopes = { "Files.ReadWrite.All" };
         public static PublicClientApplication IdentityClientApp = new PublicClientApplication(clientId);
         public static string TokenForUser = null;
